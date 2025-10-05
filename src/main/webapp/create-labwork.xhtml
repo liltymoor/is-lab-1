@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<h:head>
+    <title>Создание лабораторной работы</title>
+    <h:outputStylesheet library="css" name="styles.css"/>
+</h:head>
+<h:body>
+    <div class="container">
+        <h1>Создание новой лабораторной работы</h1>
+        
+        <!-- Навигационное меню -->
+        <div class="menu">
+            <h:form>
+                <h:commandButton value="Главная" action="index" styleClass="menu-button"/>
+                <h:commandButton value="Лабораторные работы" action="labworks" styleClass="menu-button"/>
+                <h:commandButton value="Авторы" action="persons" styleClass="menu-button"/>
+                <h:commandButton value="Дисциплины" action="disciplines" styleClass="menu-button"/>
+                <h:commandButton value="Специальные операции" action="special-operations" styleClass="menu-button"/>
+            </h:form>
+        </div>
+        
+        <!-- Сообщения -->
+        <h:panelGroup rendered="#{labWorkBean.message != null and labWorkBean.message != ''}">
+            <div class="message message-#{labWorkBean.messageType}">
+                #{labWorkBean.message}
+            </div>
+        </h:panelGroup>
+        
+        <!-- Форма создания -->
+        <div class="form-container">
+            <h:form>
+                <h2>Основная информация</h2>
+                
+                <div class="form-group">
+                    <h:outputLabel for="name" value="Название *"/>
+                    <h:inputText id="name" value="#{labWorkBean.newLabWork.name}" 
+                               required="true" requiredMessage="Название обязательно"/>
+                    <h:message for="name" styleClass="error-message"/>
+                </div>
+                
+                <div class="form-group">
+                    <h:outputLabel for="description" value="Описание"/>
+                    <h:inputTextarea id="description" value="#{labWorkBean.newLabWork.description}"/>
+                </div>
+                
+                <div class="form-group">
+                    <h:outputLabel for="difficulty" value="Сложность"/>
+                    <h:selectOneMenu id="difficulty" value="#{labWorkBean.newLabWork.difficulty}">
+                        <f:selectItem itemLabel="Выберите сложность" itemValue=""/>
+                        <f:selectItems value="#{labWorkBean.difficulties}" var="difficulty" 
+                                     itemLabel="#{difficulty}" itemValue="#{difficulty}"/>
+                    </h:selectOneMenu>
+                </div>
+                
+                <div class="form-group">
+                    <h:outputLabel for="minimalPoint" value="Минимальные баллы *"/>
+                    <h:inputText id="minimalPoint" value="#{labWorkBean.newLabWork.minimalPoint}" 
+                               required="true" requiredMessage="Минимальные баллы обязательны"/>
+                    <h:message for="minimalPoint" styleClass="error-message"/>
+                </div>
+                
+                <div class="form-group">
+                    <h:outputLabel for="personalQualitiesMaximum" value="Макс. баллы за личные качества *"/>
+                    <h:inputText id="personalQualitiesMaximum" value="#{labWorkBean.newLabWork.personalQualitiesMaximum}" 
+                               required="true" requiredMessage="Максимальные баллы за личные качества обязательны"/>
+                    <h:message for="personalQualitiesMaximum" styleClass="error-message"/>
+                </div>
+                
+                <h2>Координаты</h2>
+                
+                <div class="form-group">
+                    <h:outputLabel for="coordinatesX" value="X координата *"/>
+                    <h:inputText id="coordinatesX" value="#{labWorkBean.newLabWork.coordinates.x}" 
+                               required="true" requiredMessage="X координата обязательна"/>
+                    <h:message for="coordinatesX" styleClass="error-message"/>
+                </div>
+                
+                <div class="form-group">
+                    <h:outputLabel for="coordinatesY" value="Y координата *"/>
+                    <h:inputText id="coordinatesY" value="#{labWorkBean.newLabWork.coordinates.y}" 
+                               required="true" requiredMessage="Y координата обязательна"/>
+                    <h:message for="coordinatesY" styleClass="error-message"/>
+                </div>
+                
+                <h2>Дисциплина</h2>
+                
+                <div class="form-group">
+                    <h:outputLabel for="disciplineName" value="Название дисциплины *"/>
+                    <h:inputText id="disciplineName" value="#{labWorkBean.newLabWork.discipline.name}" 
+                               required="true" requiredMessage="Название дисциплины обязательно"/>
+                    <h:message for="disciplineName" styleClass="error-message"/>
+                </div>
+                
+                <div class="form-group">
+                    <h:outputLabel for="lectureHours" value="Часы лекций"/>
+                    <h:inputText id="lectureHours" value="#{labWorkBean.newLabWork.discipline.lectureHours}"/>
+                </div>
+                
+                <div class="form-group">
+                    <h:outputLabel for="practiceHours" value="Часы практики *"/>
+                    <h:inputText id="practiceHours" value="#{labWorkBean.newLabWork.discipline.practiceHours}" 
+                               required="true" requiredMessage="Часы практики обязательны"/>
+                    <h:message for="practiceHours" styleClass="error-message"/>
+                </div>
+                
+                <div class="form-group">
+                    <h:outputLabel for="selfStudyHours" value="Часы самостоятельной работы *"/>
+                    <h:inputText id="selfStudyHours" value="#{labWorkBean.newLabWork.discipline.selfStudyHours}" 
+                               required="true" requiredMessage="Часы самостоятельной работы обязательны"/>
+                    <h:message for="selfStudyHours" styleClass="error-message"/>
+                </div>
+                
+                <h2>Автор (необязательно)</h2>
+                
+                <div class="form-group">
+                    <h:outputLabel for="authorName" value="Имя автора"/>
+                    <h:inputText id="authorName" value="#{labWorkBean.newLabWork.author.name}"/>
+                </div>
+                
+                <div class="form-group">
+                    <h:outputLabel for="eyeColor" value="Цвет глаз"/>
+                    <h:selectOneMenu id="eyeColor" value="#{labWorkBean.newLabWork.author.eyeColor}">
+                        <f:selectItem itemLabel="Выберите цвет глаз" itemValue=""/>
+                        <f:selectItems value="#{labWorkBean.colors}" var="color" 
+                                     itemLabel="#{color}" itemValue="#{color}"/>
+                    </h:selectOneMenu>
+                </div>
+                
+                <div class="form-group">
+                    <h:outputLabel for="hairColor" value="Цвет волос"/>
+                    <h:selectOneMenu id="hairColor" value="#{labWorkBean.newLabWork.author.hairColor}">
+                        <f:selectItem itemLabel="Выберите цвет волос" itemValue=""/>
+                        <f:selectItems value="#{labWorkBean.colors}" var="color" 
+                                     itemLabel="#{color}" itemValue="#{color}"/>
+                    </h:selectOneMenu>
+                </div>
+                
+                <div class="form-group">
+                    <h:outputLabel for="nationality" value="Национальность"/>
+                    <h:selectOneMenu id="nationality" value="#{labWorkBean.newLabWork.author.nationality}">
+                        <f:selectItem itemLabel="Выберите национальность" itemValue=""/>
+                        <f:selectItems value="#{labWorkBean.countries}" var="country" 
+                                     itemLabel="#{country}" itemValue="#{country}"/>
+                    </h:selectOneMenu>
+                </div>
+                
+                <h3>Местоположение автора</h3>
+                
+                <div class="form-group">
+                    <h:outputLabel for="locationX" value="X координата"/>
+                    <h:inputText id="locationX" value="#{labWorkBean.newLabWork.author.location.x}"/>
+                </div>
+                
+                <div class="form-group">
+                    <h:outputLabel for="locationY" value="Y координата"/>
+                    <h:inputText id="locationY" value="#{labWorkBean.newLabWork.author.location.y}"/>
+                </div>
+                
+                <div class="form-group">
+                    <h:outputLabel for="locationZ" value="Z координата"/>
+                    <h:inputText id="locationZ" value="#{labWorkBean.newLabWork.author.location.z}"/>
+                </div>
+                
+                <div class="form-group">
+                    <h:outputLabel for="locationName" value="Название места"/>
+                    <h:inputText id="locationName" value="#{labWorkBean.newLabWork.author.location.name}"/>
+                </div>
+                
+                <div class="form-group">
+                    <h:outputLabel for="birthday" value="Дата рождения"/>
+                    <h:inputText id="birthday" value="#{labWorkBean.newLabWork.author.birthday}">
+                        <f:convertDateTime pattern="yyyy-MM-dd'T'HH:mm"/>
+                    </h:inputText>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <h:commandButton value="Создать" action="#{labWorkBean.createLabWork()}" 
+                                   styleClass="btn btn-success"/>
+                    <h:commandButton value="Отмена" action="labworks" 
+                                   styleClass="btn btn-secondary"/>
+                </div>
+            </h:form>
+        </div>
+    </div>
+</h:body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<h:head>
+    <title>Лабораторные работы</title>
+    <h:outputStylesheet library="css" name="styles.css"/>
+    <h:outputScript library="js" name="websocket.js"/>
+</h:head>
+<h:body>
+    <div class="container">
+        <h1>Управление лабораторными работами</h1>
+        
+        <!-- Навигационное меню -->
+        <div class="menu">
+            <h:form>
+                <h:commandButton value="Главная" action="index" styleClass="menu-button"/>
+                <h:commandButton value="Лабораторные работы" action="labworks" styleClass="menu-button"/>
+                <h:commandButton value="Авторы" action="persons" styleClass="menu-button"/>
+                <h:commandButton value="Дисциплины" action="disciplines" styleClass="menu-button"/>
+                <h:commandButton value="Специальные операции" action="special-operations" styleClass="menu-button"/>
+            </h:form>
+        </div>
+        
+        <!-- Сообщения -->
+        <h:panelGroup rendered="#{labWorkBean.message != null and labWorkBean.message != ''}">
+            <div class="message message-#{labWorkBean.messageType}">
+                #{labWorkBean.message}
+            </div>
+        </h:panelGroup>
+        
+        <!-- Фильтры -->
+        <div class="filters">
+            <h:form>
+                <h3>Фильтры</h3>
+                <div class="form-group">
+                    <h:outputLabel for="nameFilter" value="Название:"/>
+                    <h:inputText id="nameFilter" value="#{labWorkBean.nameFilter}" placeholder="Введите название"/>
+                </div>
+                
+                <div class="form-group">
+                    <h:outputLabel for="difficultyFilter" value="Сложность:"/>
+                    <h:selectOneMenu id="difficultyFilter" value="#{labWorkBean.difficultyFilter}">
+                        <f:selectItem itemLabel="Все" itemValue=""/>
+                        <f:selectItems value="#{labWorkBean.difficulties}" var="difficulty" 
+                                     itemLabel="#{difficulty}" itemValue="#{difficulty}"/>
+                    </h:selectOneMenu>
+                </div>
+                
+                <div class="form-group">
+                    <h:outputLabel for="minimalPointFilter" value="Минимальные баллы:"/>
+                    <h:inputText id="minimalPointFilter" value="#{labWorkBean.minimalPointFilter}" 
+                               placeholder="Введите количество баллов"/>
+                </div>
+                
+                <h:commandButton value="Применить фильтры" action="#{labWorkBean.applyFilters()}" 
+                               styleClass="btn btn-primary"/>
+                <h:commandButton value="Очистить" action="#{labWorkBean.clearFilters()}" 
+                               styleClass="btn btn-secondary"/>
+            </h:form>
+        </div>
+        
+        <!-- Кнопки действий -->
+        <div style="margin-bottom: 20px;">
+            <h:form>
+                <h:commandButton value="Создать новую лабораторную работу" action="create-labwork" 
+                               styleClass="btn btn-success"/>
+            </h:form>
+        </div>
+        
+        <!-- Таблица лабораторных работ -->
+        <h:dataTable value="#{labWorkBean.labWorks}" var="labWork" 
+                    styleClass="data-table" rendered="#{not empty labWorkBean.labWorks}">
+            <h:column>
+                <f:facet name="header">ID</f:facet>
+                #{labWork.id}
+            </h:column>
+            
+            <h:column>
+                <f:facet name="header">Название</f:facet>
+                #{labWork.name}
+            </h:column>
+            
+            <h:column>
+                <f:facet name="header">Координаты</f:facet>
+                (#{labWork.coordinates.x}, #{labWork.coordinates.y})
+            </h:column>
+            
+            <h:column>
+                <f:facet name="header">Дата создания</f:facet>
+                #{labWork.creationDate}
+            </h:column>
+            
+            <h:column>
+                <f:facet name="header">Описание</f:facet>
+                #{labWork.description}
+            </h:column>
+            
+            <h:column>
+                <f:facet name="header">Сложность</f:facet>
+                #{labWork.difficulty}
+            </h:column>
+            
+            <h:column>
+                <f:facet name="header">Дисциплина</f:facet>
+                #{labWork.discipline.name}
+            </h:column>
+            
+            <h:column>
+                <f:facet name="header">Минимальные баллы</f:facet>
+                #{labWork.minimalPoint}
+            </h:column>
+            
+            <h:column>
+                <f:facet name="header">Макс. баллы за личные качества</f:facet>
+                #{labWork.personalQualitiesMaximum}
+            </h:column>
+            
+            <h:column>
+                <f:facet name="header">Автор</f:facet>
+                #{labWork.author.name}
+            </h:column>
+            
+            <h:column>
+                <f:facet name="header">Действия</f:facet>
+                <h:form>
+                    <h:commandButton value="Просмотр" action="#{labWorkBean.viewLabWork(labWork)}" 
+                                   styleClass="btn btn-primary"/>
+                    <h:commandButton value="Редактировать" action="#{labWorkBean.editLabWork(labWork)}" 
+                                   styleClass="btn btn-warning"/>
+                    <h:commandButton value="Удалить" action="#{labWorkBean.deleteLabWork(labWork)}" 
+                                   styleClass="btn btn-danger" 
+                                   onclick="return confirm('Вы уверены, что хотите удалить эту лабораторную работу?')"/>
+                </h:form>
+            </h:column>
+        </h:dataTable>
+        
+        <!-- Сообщение о пустом списке -->
+        <h:panelGroup rendered="#{empty labWorkBean.labWorks}">
+            <div class="message message-info">
+                Лабораторные работы не найдены. Попробуйте изменить фильтры или создать новую работу.
+            </div>
+        </h:panelGroup>
+        
+        <!-- Пагинация -->
+        <h:panelGroup rendered="#{labWorkBean.totalCount > 0}">
+            <div class="pagination">
+                <h:form>
+                    <h:commandButton value="Первая" action="#{labWorkBean.firstPage()}" 
+                                   styleClass="btn btn-secondary" 
+                                   disabled="#{!labWorkBean.hasPreviousPage()}"/>
+                    <h:commandButton value="Предыдущая" action="#{labWorkBean.previousPage()}" 
+                                   styleClass="btn btn-secondary" 
+                                   disabled="#{!labWorkBean.hasPreviousPage()}"/>
+                    
+                    <span class="pagination-info">
+                        Страница #{labWorkBean.currentPageNumber} из #{labWorkBean.totalPages}
+                        (Всего записей: #{labWorkBean.totalCount})
+                    </span>
+                    
+                    <h:commandButton value="Следующая" action="#{labWorkBean.nextPage()}" 
+                                   styleClass="btn btn-secondary" 
+                                   disabled="#{!labWorkBean.hasNextPage()}"/>
+                    <h:commandButton value="Последняя" action="#{labWorkBean.lastPage()}" 
+                                   styleClass="btn btn-secondary" 
+                                   disabled="#{!labWorkBean.hasNextPage()}"/>
+                </h:form>
+            </div>
+        </h:panelGroup>
+    </div>
+</h:body>
+</html>

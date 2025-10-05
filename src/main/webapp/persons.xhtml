@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<h:head>
+    <title>Авторы</title>
+    <h:outputStylesheet library="css" name="styles.css"/>
+    <h:outputScript library="js" name="websocket.js"/>
+</h:head>
+<h:body>
+    <div class="container">
+        <h1>Управление авторами</h1>
+        
+        <!-- Навигационное меню -->
+        <div class="menu">
+            <h:form>
+                <h:commandButton value="Главная" action="index" styleClass="menu-button"/>
+                <h:commandButton value="Лабораторные работы" action="labworks" styleClass="menu-button"/>
+                <h:commandButton value="Авторы" action="persons" styleClass="menu-button"/>
+                <h:commandButton value="Дисциплины" action="disciplines" styleClass="menu-button"/>
+                <h:commandButton value="Специальные операции" action="special-operations" styleClass="menu-button"/>
+            </h:form>
+        </div>
+        
+        <!-- Сообщения -->
+        <h:panelGroup rendered="#{personBean.message != null and personBean.message != ''}">
+            <div class="message message-#{personBean.messageType}">
+                #{personBean.message}
+            </div>
+        </h:panelGroup>
+        
+        <!-- Фильтры -->
+        <div class="filters">
+            <h:form>
+                <h3>Фильтры</h3>
+                <div class="form-group">
+                    <h:outputLabel for="nameFilter" value="Имя:"/>
+                    <h:inputText id="nameFilter" value="#{personBean.nameFilter}" placeholder="Введите имя"/>
+                </div>
+                
+                <div class="form-group">
+                    <h:outputLabel for="nationalityFilter" value="Национальность:"/>
+                    <h:selectOneMenu id="nationalityFilter" value="#{personBean.nationalityFilter}">
+                        <f:selectItem itemLabel="Все" itemValue=""/>
+                        <f:selectItems value="#{personBean.countries}" var="country" 
+                                     itemLabel="#{country}" itemValue="#{country}"/>
+                    </h:selectOneMenu>
+                </div>
+                
+                <div class="form-group">
+                    <h:outputLabel for="eyeColorFilter" value="Цвет глаз:"/>
+                    <h:selectOneMenu id="eyeColorFilter" value="#{personBean.eyeColorFilter}">
+                        <f:selectItem itemLabel="Все" itemValue=""/>
+                        <f:selectItems value="#{personBean.colors}" var="color" 
+                                     itemLabel="#{color}" itemValue="#{color}"/>
+                    </h:selectOneMenu>
+                </div>
+                
+                <h:commandButton value="Применить фильтры" action="#{personBean.applyFilters()}" 
+                               styleClass="btn btn-primary"/>
+                <h:commandButton value="Очистить" action="#{personBean.clearFilters()}" 
+                               styleClass="btn btn-secondary"/>
+            </h:form>
+        </div>
+        
+        <!-- Кнопки действий -->
+        <div style="margin-bottom: 20px;">
+            <h:form>
+                <h:commandButton value="Создать нового автора" action="create-person" 
+                               styleClass="btn btn-success"/>
+            </h:form>
+        </div>
+        
+        <!-- Таблица авторов -->
+        <h:dataTable value="#{personBean.persons}" var="person" 
+                    styleClass="data-table" rendered="#{not empty personBean.persons}">
+            <h:column>
+                <f:facet name="header">ID</f:facet>
+                #{person.id}
+            </h:column>
+            
+            <h:column>
+                <f:facet name="header">Имя</f:facet>
+                #{person.name}
+            </h:column>
+            
+            <h:column>
+                <f:facet name="header">Цвет глаз</f:facet>
+                #{person.eyeColor}
+            </h:column>
+            
+            <h:column>
+                <f:facet name="header">Цвет волос</f:facet>
+                #{person.hairColor}
+            </h:column>
+            
+            <h:column>
+                <f:facet name="header">Национальность</f:facet>
+                #{person.nationality}
+            </h:column>
+            
+            <h:column>
+                <f:facet name="header">Дата рождения</f:facet>
+                #{person.birthday}
+            </h:column>
+            
+            <h:column>
+                <f:facet name="header">Местоположение</f:facet>
+                #{person.location.name}
+            </h:column>
+            
+            <h:column>
+                <f:facet name="header">Действия</f:facet>
+                <h:form>
+                    <h:commandButton value="Просмотр" action="#{personBean.viewPerson(person)}" 
+                                   styleClass="btn btn-primary"/>
+                    <h:commandButton value="Редактировать" action="#{personBean.editPerson(person)}" 
+                                   styleClass="btn btn-warning"/>
+                    <h:commandButton value="Удалить" action="#{personBean.deletePerson(person)}" 
+                                   styleClass="btn btn-danger" 
+                                   onclick="return confirm('Вы уверены, что хотите удалить этого автора?')"/>
+                </h:form>
+            </h:column>
+        </h:dataTable>
+        
+        <!-- Сообщение о пустом списке -->
+        <h:panelGroup rendered="#{empty personBean.persons}">
+            <div class="message message-info">
+                Авторы не найдены. Попробуйте изменить фильтры или создать нового автора.
+            </div>
+        </h:panelGroup>
+        
+        <!-- Пагинация -->
+        <h:panelGroup rendered="#{personBean.totalCount > 0}">
+            <div class="pagination">
+                <h:form>
+                    <h:commandButton value="Первая" action="#{personBean.firstPage()}" 
+                                   styleClass="btn btn-secondary" 
+                                   disabled="#{!personBean.hasPreviousPage()}"/>
+                    <h:commandButton value="Предыдущая" action="#{personBean.previousPage()}" 
+                                   styleClass="btn btn-secondary" 
+                                   disabled="#{!personBean.hasPreviousPage()}"/>
+                    
+                    <span class="pagination-info">
+                        Страница #{personBean.currentPageNumber} из #{personBean.totalPages}
+                        (Всего записей: #{personBean.totalCount})
+                    </span>
+                    
+                    <h:commandButton value="Следующая" action="#{personBean.nextPage()}" 
+                                   styleClass="btn btn-secondary" 
+                                   disabled="#{!personBean.hasNextPage()}"/>
+                    <h:commandButton value="Последняя" action="#{personBean.lastPage()}" 
+                                   styleClass="btn btn-secondary" 
+                                   disabled="#{!personBean.hasNextPage()}"/>
+                </h:form>
+            </div>
+        </h:panelGroup>
+    </div>
+</h:body>
+</html>
