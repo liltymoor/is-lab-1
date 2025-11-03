@@ -23,7 +23,12 @@ public class LabWork {
     private String name;
     
     @NotNull(message = "Координаты не могут быть null")
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE,
+            CascadeType.REFRESH,
+            CascadeType.DETACH
+    }, fetch = FetchType.LAZY)
     @JoinColumn(name = "coordinates_id", nullable = false)
     private Coordinates coordinates;
     
@@ -39,7 +44,7 @@ public class LabWork {
     private Difficulty difficulty;
     
     @NotNull(message = "Дисциплина не может быть null")
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     @JoinColumn(name = "discipline_id", nullable = false)
     private Discipline discipline;
     
@@ -52,7 +57,12 @@ public class LabWork {
     @Column(name = "personal_qualities_maximum", nullable = false)
     private Float personalQualitiesMaximum;
     
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE,
+            CascadeType.REFRESH,
+            CascadeType.DETACH
+    }, fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id")
     private Person author;
     

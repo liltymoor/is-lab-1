@@ -28,6 +28,17 @@ public class PersonDAO extends BaseDAO<Person> {
     }
     
     /**
+     * Найти автора по ID с подгрузкой зависимостей (location)
+     */
+    public java.util.Optional<Person> findByIdWithLocation(Long id) {
+        TypedQuery<Person> query = entityManager.createQuery(
+                "SELECT p FROM Person p LEFT JOIN FETCH p.location WHERE p.id = :id", Person.class);
+        query.setParameter("id", id);
+        java.util.List<Person> result = query.getResultList();
+        return result.isEmpty() ? java.util.Optional.empty() : java.util.Optional.of(result.get(0));
+    }
+    
+    /**
      * Найти авторов по имени (частичное совпадение)
      */
     public List<Person> findByNameContaining(String name) {

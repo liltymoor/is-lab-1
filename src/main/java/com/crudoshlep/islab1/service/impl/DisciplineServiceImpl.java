@@ -5,6 +5,7 @@ import com.crudoshlep.islab1.model.Discipline;
 import com.crudoshlep.islab1.service.DisciplineService;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
@@ -15,7 +16,7 @@ import java.util.Optional;
 @Stateless
 public class DisciplineServiceImpl implements DisciplineService {
     
-    @EJB
+    @Inject
     private DisciplineDAO disciplineDAO;
     
     @Override

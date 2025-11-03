@@ -30,7 +30,7 @@ public class LabWorkServiceImpl implements LabWorkService {
     
     @Override
     public Optional<LabWork> getLabWorkById(Integer id) {
-        return labWorkDAO.findById(id);
+        return labWorkDAO.findByIdWithAll(id);
     }
     
     @Override

@@ -1,6 +1,7 @@
 package com.crudoshlep.islab1.service.impl;
 
 import com.crudoshlep.islab1.dao.PersonDAO;
+import com.crudoshlep.islab1.model.Location;
 import com.crudoshlep.islab1.model.Person;
 import com.crudoshlep.islab1.service.PersonService;
 import jakarta.ejb.EJB;
@@ -56,4 +57,29 @@ public class PersonServiceImpl implements PersonService {
     public long getTotalCount() {
         return personDAO.count();
     }
+
+    public boolean reassignLocationAndDeletePerson(Long oldPersonId, Long newPersonId) {
+        Optional<Person> oldOpt = getPersonById(oldPersonId);
+        Optional<Person> newOpt = getPersonById(newPersonId);
+
+        if (oldOpt.isEmpty() || newOpt.isEmpty()) {
+            return false;
+        }
+
+        Person oldPerson = oldOpt.get();
+        Person newPerson = newOpt.get();
+
+        Location locationToMove = oldPerson.getLocation();
+
+        if (locationToMove == null) {
+            return deletePersonById(oldPersonId);
+        }
+
+        newPerson.setLocation(locationToMove);
+        updatePerson(newPerson);
+        deletePersonById(oldPersonId);
+
+        return true;
+    }
+
 }

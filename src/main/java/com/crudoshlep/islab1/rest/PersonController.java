@@ -1,13 +1,19 @@
 package com.crudoshlep.islab1.rest;
 
+import com.crudoshlep.islab1.config.JacksonConfig;
 import com.crudoshlep.islab1.model.Person;
 import com.crudoshlep.islab1.service.PersonService;
+import com.crudoshlep.islab1.websocket.LocationWebSocket;
+import com.crudoshlep.islab1.websocket.PersonWebSocket;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.hibernate.Hibernate;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -20,14 +26,29 @@ import java.util.Optional;
 public class PersonController {
     @Inject
     private PersonService personService;
-    
+
+    public PersonController() {
+    }
+
+    public PersonController(PersonService personService) {
+        this.personService = personService;
+    }
+
     /**
      * Создать нового автора
      */
     @POST
     public Response createPerson(@Valid Person person) {
+        System.out.println(person.toString());
+        person.getLocation();
+
         try {
             Person created = personService.createPerson(person);
+
+            ObjectMapper mapper = new JacksonConfig().getContext(ObjectMapper.class);
+            String json = mapper.writeValueAsString(personService.getAllPersons());
+            PersonWebSocket.broadcast(json);
+
             return Response.status(Response.Status.CREATED).entity(created).build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -59,6 +80,11 @@ public class PersonController {
         try {
             person.setId(id);
             Person updated = personService.updatePerson(person);
+
+            ObjectMapper mapper = new JacksonConfig().getContext(ObjectMapper.class);
+            String json = mapper.writeValueAsString(personService.getAllPersons());
+            PersonWebSocket.broadcast(json);
+
             return Response.ok(updated).build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -72,12 +98,36 @@ public class PersonController {
     @DELETE
     @Path("/{id}")
     public Response deletePersonById(@PathParam("id") Long id) {
-        boolean deleted = personService.deletePersonById(id);
-        if (deleted) {
-            return Response.ok("Автор успешно удален").build();
-        } else {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity("Автор с ID " + id + " не найден").build();
+        try {
+            Optional<Person> personOpt = personService.getPersonById(id);
+            if (personOpt.isEmpty()) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity("Автор с ID " + id + " не найден").build();
+            }
+
+            Person person = personOpt.get();
+            if (person.getLocation() != null) {
+                return Response
+                        .status(409)
+                        .entity("У Автора есть привязанная локация")
+                        .build();
+            }
+
+            boolean deleted = personService.deletePersonById(id);
+            if (deleted) {
+                ObjectMapper mapper = new JacksonConfig().getContext(ObjectMapper.class);
+                String json = mapper.writeValueAsString(personService.getAllPersons());
+                PersonWebSocket.broadcast(json);
+
+                return Response.ok("Автор успешно удален").build();
+            } else {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity("Автор с ID " + id + " не найден").build();
+            }
+        }
+        catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Ошибка при удалении автора: " + e.getMessage()).build();
         }
     }
     
@@ -106,4 +156,29 @@ public class PersonController {
                     .entity("Ошибка при получении списка авторов: " + e.getMessage()).build();
         }
     }
+
+    @DELETE
+    @Path("/{id}/reassign")
+    public Response deletePersonAndReassign(
+            @PathParam("id") Long id,
+            @QueryParam("newPersonId") Long newPersonId
+    ) {
+        try {
+            boolean success = personService.reassignLocationAndDeletePerson(id, newPersonId);
+            if (success) {
+                ObjectMapper mapper = new JacksonConfig().getContext(ObjectMapper.class);
+                String json = mapper.writeValueAsString(personService.getAllPersons());
+                PersonWebSocket.broadcast(json);
+
+                return Response.ok("Автор удалён, Location переназначен").build();
+            } else {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Не удалось переназначить Location").build();
+            }
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Ошибка при удалении: " + e.getMessage()).build();
+        }
+    }
+
 }

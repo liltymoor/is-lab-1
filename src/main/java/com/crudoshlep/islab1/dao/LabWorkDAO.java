@@ -3,6 +3,7 @@ package com.crudoshlep.islab1.dao;
 import com.crudoshlep.islab1.model.LabWork;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -22,6 +23,23 @@ public class LabWorkDAO extends BaseDAO<LabWork> {
     
     public LabWorkDAO() {
         super(LabWork.class);
+    }
+    
+    /**
+     * Найти лабораторную работу по ID с подгрузкой зависимостей
+     * coordinates, discipline, author и его location
+     */
+    public java.util.Optional<LabWork> findByIdWithAll(Integer id) {
+        TypedQuery<LabWork> query = entityManager.createQuery(
+                "SELECT lw FROM LabWork lw " +
+                        "LEFT JOIN FETCH lw.coordinates " +
+                        "LEFT JOIN FETCH lw.discipline " +
+                        "LEFT JOIN FETCH lw.author a " +
+                        "LEFT JOIN FETCH a.location " +
+                        "WHERE lw.id = :id", LabWork.class);
+        query.setParameter("id", id);
+        java.util.List<LabWork> result = query.getResultList();
+        return result.isEmpty() ? java.util.Optional.empty() : java.util.Optional.of(result.get(0));
     }
     
     /**
@@ -187,6 +205,7 @@ public class LabWorkDAO extends BaseDAO<LabWork> {
      * Удалить все лабораторные работы с определенным минимальным количеством баллов
      */
     public int deleteByMinimalPoint(int minimalPoint) {
+        EntityTransaction tr = entityManager.getTransaction();
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<LabWork> cq = cb.createQuery(LabWork.class);
         Root<LabWork> root = cq.from(LabWork.class);
@@ -197,10 +216,13 @@ public class LabWorkDAO extends BaseDAO<LabWork> {
         List<LabWork> labWorks = query.getResultList();
         
         int count = 0;
+        tr.begin();
         for (LabWork labWork : labWorks) {
             entityManager.remove(labWork);
+            entityManager.flush();
             count++;
         }
+        tr.commit();
         
         return count;
     }

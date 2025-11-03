@@ -66,4 +66,13 @@
         </auth-constraint>
     </security-constraint>
     
+    <!-- CORS Filter for all requests, including non-JAX-RS responses -->
+    <filter>
+        <filter-name>CorsServletFilter</filter-name>
+        <filter-class>com.crudoshlep.islab1.filters.CorsServletFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>CorsServletFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 </web-app>

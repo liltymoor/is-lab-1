@@ -1,6 +1,8 @@
 package com.crudoshlep.islab1.service;
 
 import com.crudoshlep.islab1.model.Discipline;
+import jakarta.validation.Valid;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -12,7 +14,7 @@ public interface DisciplineService {
     /**
      * Создать новую дисциплину
      */
-    Discipline createDiscipline(Discipline discipline);
+    Discipline createDiscipline(@Valid Discipline discipline);
     
     /**
      * Получить дисциплину по ID
@@ -22,7 +24,7 @@ public interface DisciplineService {
     /**
      * Обновить дисциплину
      */
-    Discipline updateDiscipline(Discipline discipline);
+    Discipline updateDiscipline(@Valid Discipline discipline);
     
     /**
      * Удалить дисциплину по ID

@@ -1,6 +1,8 @@
 package com.crudoshlep.islab1.service;
 
 import com.crudoshlep.islab1.model.LabWork;
+import jakarta.validation.Valid;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -12,7 +14,7 @@ public interface LabWorkService {
     /**
      * Создать новую лабораторную работу
      */
-    LabWork createLabWork(LabWork labWork);
+    LabWork createLabWork(@Valid LabWork labWork);
     
     /**
      * Получить лабораторную работу по ID
@@ -22,7 +24,7 @@ public interface LabWorkService {
     /**
      * Обновить лабораторную работу
      */
-    LabWork updateLabWork(LabWork labWork);
+    LabWork updateLabWork(@Valid LabWork labWork);
     
     /**
      * Удалить лабораторную работу по ID

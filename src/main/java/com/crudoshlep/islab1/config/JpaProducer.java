@@ -26,7 +26,7 @@ public class JpaProducer {
         Map<String, Object> overrides = new HashMap<>();
 
         // не воруйте мои креды это флекс (haggiwaggi)
-        String url = "jdbc:postgresql://localhost:5433/studs"; // todo 5432 deploy port
+        String url = "jdbc:postgresql://localhost:5432/studs"; // todo 5432 deploy port
         String user = "s413105";
         String password = "r5BklO7TucYga3Oe";
 
@@ -43,8 +43,6 @@ public class JpaProducer {
         if (password != null && !password.isBlank()) {
             overrides.put("jakarta.persistence.jdbc.password", password);
         }
-
-        System.out.println(overrides);
 
         return overrides.isEmpty()
                 ? Persistence.createEntityManagerFactory("default")

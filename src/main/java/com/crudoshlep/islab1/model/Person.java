@@ -3,6 +3,8 @@ package com.crudoshlep.islab1.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotBlank;
+import org.hibernate.annotations.Cascade;
+
 import java.time.LocalDateTime;
 
 /**
@@ -30,7 +32,7 @@ public class Person {
     private Color hairColor;
     
     @NotNull(message = "Местоположение не может быть null")
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "location_id", nullable = false)
     private Location location;
     

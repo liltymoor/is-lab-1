@@ -1,7 +1,12 @@
 package com.crudoshlep.islab1.rest;
 
+import com.crudoshlep.islab1.config.JacksonConfig;
 import com.crudoshlep.islab1.model.LabWork;
 import com.crudoshlep.islab1.service.LabWorkService;
+import com.crudoshlep.islab1.websocket.DisciplinesWebSocket;
+import com.crudoshlep.islab1.websocket.LabWorkWebSocket;
+import com.crudoshlep.islab1.websocket.LocationWebSocket;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -17,10 +22,12 @@ import java.util.Optional;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class LabWorkController {
-
+    @Inject
     private LabWorkService labWorkService;
 
-    @Inject
+    public LabWorkController() {
+    }
+
     public LabWorkController(LabWorkService labWorkService) {
         this.labWorkService = labWorkService;
     }
@@ -32,6 +39,11 @@ public class LabWorkController {
     public Response createLabWork(@Valid LabWork labWork) {
         try {
             LabWork created = labWorkService.createLabWork(labWork);
+
+            ObjectMapper mapper = new JacksonConfig().getContext(ObjectMapper.class);
+            String json = mapper.writeValueAsString(labWorkService.getAllLabWorks());
+            DisciplinesWebSocket.broadcast(json);
+
             return Response.status(Response.Status.CREATED).entity(created).build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -63,6 +75,11 @@ public class LabWorkController {
         try {
             labWork.setId(id);
             LabWork updated = labWorkService.updateLabWork(labWork);
+
+            ObjectMapper mapper = new JacksonConfig().getContext(ObjectMapper.class);
+            String json = mapper.writeValueAsString(labWorkService.getAllLabWorks());
+            DisciplinesWebSocket.broadcast(json);
+
             return Response.ok(updated).build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -76,13 +93,23 @@ public class LabWorkController {
     @DELETE
     @Path("/{id}")
     public Response deleteLabWorkById(@PathParam("id") Integer id) {
-        boolean deleted = labWorkService.deleteLabWorkById(id);
-        if (deleted) {
-            return Response.ok("Лабораторная работа успешно удалена").build();
-        } else {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity("Лабораторная работа с ID " + id + " не найдена").build();
+        try {
+            boolean deleted = labWorkService.deleteLabWorkById(id);
+            if (deleted) {
+                ObjectMapper mapper = new JacksonConfig().getContext(ObjectMapper.class);
+                String json = mapper.writeValueAsString(labWorkService.getAllLabWorks());
+                DisciplinesWebSocket.broadcast(json);
+
+                return Response.ok("Лабораторная работа успешно удалена").build();
+            } else {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity("Лабораторная работа с ID " + id + " не найдена").build();
+            }
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Ошибка при обновлении лабораторной работы: " + e.getMessage()).build();
         }
+
     }
     
     /**
@@ -143,7 +170,7 @@ public class LabWorkController {
     public Response countByPersonalQualitiesMaximum(@PathParam("personalQualitiesMaximum") Float personalQualitiesMaximum) {
         try {
             long count = labWorkService.countByPersonalQualitiesMaximum(personalQualitiesMaximum);
-            return Response.ok("Количество лабораторных работ: " + count).build();
+            return Response.ok(count).build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Ошибка при подсчете лабораторных работ: " + e.getMessage()).build();
@@ -158,7 +185,7 @@ public class LabWorkController {
     public Response countByAuthorLessThan(@PathParam("authorId") Long authorId) {
         try {
             long count = labWorkService.countByAuthorLessThan(authorId);
-            return Response.ok("Количество лабораторных работ: " + count).build();
+            return Response.ok(count).build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Ошибка при подсчете лабораторных работ: " + e.getMessage()).build();

@@ -2,6 +2,7 @@ package com.crudoshlep.islab1.dao;
 
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -27,15 +28,38 @@ public abstract class BaseDAO<T> {
      * Сохранить сущность
      */
     public T save(T entity) {
-        entityManager.persist(entity);
-        return entity;
+        EntityTransaction tx = entityManager.getTransaction();
+        try {
+            tx.begin();
+            entityManager.merge(entity);
+            entityManager.flush();
+            tx.commit();
+            return entity;
+        } catch (RuntimeException e) {
+            if (tx.isActive()) {
+                tx.rollback();
+            }
+            throw e;
+        }
     }
     
     /**
      * Обновить сущность
      */
     public T update(T entity) {
-        return entityManager.merge(entity);
+        EntityTransaction tx = entityManager.getTransaction();
+        try {
+            tx.begin();
+            T merged = entityManager.merge(entity);
+            entityManager.flush();
+            tx.commit();
+            return merged;
+        } catch (RuntimeException e) {
+            if (tx.isActive()) {
+                tx.rollback();
+            }
+            throw e;
+        }
     }
     
     /**
@@ -62,19 +86,42 @@ public abstract class BaseDAO<T> {
      * Удалить сущность по ID
      */
     public boolean deleteById(Object id) {
-        T entity = entityManager.find(entityClass, id);
-        if (entity != null) {
-            entityManager.remove(entity);
-            return true;
+        EntityTransaction tx = entityManager.getTransaction();
+        try {
+            tx.begin();
+            T entity = entityManager.find(entityClass, id);
+            if (entity != null) {
+                entityManager.remove(entity);
+                entityManager.flush();
+                tx.commit();
+                return true;
+            }
+            tx.commit();
+            return false;
+        } catch (RuntimeException e) {
+            if (tx.isActive()) {
+                tx.rollback();
+            }
+            throw e;
         }
-        return false;
     }
     
     /**
      * Удалить сущность
      */
     public void delete(T entity) {
-        entityManager.remove(entity);
+        EntityTransaction tx = entityManager.getTransaction();
+        try {
+            tx.begin();
+            entityManager.remove(entity);
+            entityManager.flush();
+            tx.commit();
+        } catch (RuntimeException e) {
+            if (tx.isActive()) {
+                tx.rollback();
+            }
+            throw e;
+        }
     }
     
     /**

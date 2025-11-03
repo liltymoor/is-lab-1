@@ -1,6 +1,8 @@
 package com.crudoshlep.islab1.service;
 
 import com.crudoshlep.islab1.model.Person;
+import jakarta.validation.Valid;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -12,7 +14,7 @@ public interface PersonService {
     /**
      * Создать нового автора
      */
-    Person createPerson(Person person);
+    Person createPerson(@Valid Person person);
     
     /**
      * Получить автора по ID
@@ -22,7 +24,7 @@ public interface PersonService {
     /**
      * Обновить автора
      */
-    Person updatePerson(Person person);
+    Person updatePerson(@Valid Person person);
     
     /**
      * Удалить автора по ID
@@ -44,4 +46,6 @@ public interface PersonService {
      * Подсчитать общее количество авторов
      */
     long getTotalCount();
+
+    boolean reassignLocationAndDeletePerson(Long oldPersonId, Long newPersonId);
 }
